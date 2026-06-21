@@ -141,6 +141,7 @@ cd build
     -DQSCINTILLA_INCLUDE_DIR=/usr/include/qt5 \
     -DENABLE_TESTS=FALSE \
     -DWITH_3D=TRUE \
+    -DWITH_INTERNAL_SPATIALINDEX=TRUE \
     -Wno-dev \
     $OCL \
     $WITHPDAL \
