@@ -70,7 +70,7 @@ set -e
 
 # We have to disable WITH_QTWEBKIT in current
 # because it is not more available
-if [ -d "/usr/include/qt5/QtWebKit" ]; then
+if [ -d "/usr/include/qt6/QtWebKit" ]; then
    QTWEBKIT=""
 else 
    QTWEBKIT="-DWITH_QTWEBKIT=OFF "
@@ -138,7 +138,7 @@ cd build
     -DWITH_CUSTOM_WIDGETS=FALSE \
     -DBINDINGS_GLOBAL_INSTALL=TRUE \
     -DQWT_INCLUDE_DIR=/usr/include/qwt \
-    -DQSCINTILLA_INCLUDE_DIR=/usr/include/qt5 \
+    -DQSCINTILLA_INCLUDE_DIR=/usr/include/qt6 \
     -DENABLE_TESTS=FALSE \
     -DWITH_3D=TRUE \
     -DWITH_INTERNAL_SPATIALINDEX=TRUE \

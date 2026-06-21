@@ -89,21 +89,22 @@ export LD_LIBRARY_PATH=$TMP/${SRCNAM}-$VERSION/src
 # without spamming the harddisk:
 export QMAKEFEATURES=${PWD}/src/features/
 cd src
-qmake-qt5
+qmake6
 make $NUMJOBS || exit 1
 
 cd ../designer
-qmake-qt5 INCLUDEPATH+=../src QMAKE_LIBDIR+=../src
+qmake6 INCLUDEPATH+=../src QMAKE_LIBDIR+=../src
 make $NUMJOBS || exit 1
 
 cd ../Python
-mv pyproject-qt5.toml pyproject.toml
+mv pyproject-qt6.toml pyproject.toml
 sip-build \
   --no-make \
+  --qmake /usr/bin/qmake6 \
   --qsci-features-dir ../src/features \
   --qsci-include-dir ../src \
   --qsci-library-dir ../src \
-  --api-dir /usr/share/qt5/qsci/api/python || exit 1
+  --api-dir /usr/share/qt6/qsci/api/python || exit 1
 cd build
 make $NUMJOBS || exit 1
 
