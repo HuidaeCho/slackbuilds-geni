@@ -1,0 +1,19 @@
+--- tabbed.c.orig	2025-08-09 07:01:04.400276653 -0600
++++ tabbed.c	2026-10-14 07:23:12.468663812 -0600
+@@ -710,7 +710,6 @@
+ void
+ manage(Window w)
+ {
+-	updatenumlockmask();
+ 	{
+ 		int i, j, nextpos;
+ 		unsigned int modifiers[] = { 0, LockMask, numlockmask,
+@@ -1095,6 +1094,8 @@
+ 
+ 	nextfocus = foreground;
+ 	focus(-1);
++
++	updatenumlockmask();
+ }
+ 
+ void
