@@ -12,7 +12,6 @@ cleanup(){
 trap cleanup EXIT
 tmp=/tmp/customsbo.$$
 
-first=1
 for i in $(find $custom -type d ! -name .git ! -empty -mindepth 1 -maxdepth 1 -printf "%f\n"); do
 	c=$custom/$i
 	s=$(find /var/lib/sbopkg/SBo-git -type d -name $i)
@@ -21,10 +20,21 @@ for i in $(find $custom -type d ! -name .git ! -empty -mindepth 1 -maxdepth 1 -p
 		cver=$(sed '/^VERSION=/!d; s/.*:-\|}.*//g' $c/$i.SlackBuild.sbopkg)
 		sver=$(sed '/^VERSION=/!d; s/.*:-\|}.*//g' $s/$i.SlackBuild)
 		printf "%s\n" $sver $cver | sort -VC || {
-			[ $first -eq 0 ] || first=0
-			echo "$i: skipped (sbopkg version is newer)"
+			echo "$i: skipping (sbopkg version is newer)"
 			continue
 		}
+		if [ -f $s/$i.SlackBuild.sbopkg ]; then
+			cver=$(sed '/^VERSION=/!d; s/.*:-\|}.*//g' $c/$i.SlackBuild.sbopkg)
+			sver=$(sed '/^VERSION=/!d; s/.*:-\|}.*//g' $s/$i.SlackBuild.sbopkg)
+			printf "%s\n" $sver $cver | sort -VC || {
+				echo "$i: skipping (sbopkg custom version is newer)"
+				continue
+			}
+			printf "%s\n" $cver $sver | sort -VC || {
+				echo "$i: deleting older sbopkg custom files"
+				rm -f $s/*.sbopkg
+			}
+		fi
 	fi
 	patch=
 	for f in $(find $c ! -name README.md -mindepth 1 -maxdepth 1 -printf "%f\n"); do
@@ -34,7 +44,6 @@ for i in $(find $custom -type d ! -name .git ! -empty -mindepth 1 -maxdepth 1 -p
 					if [ -f $s/$f/$g ]; then
 						diff=$(diff $c/$f/$g $s/$f/$g)
 						[ "$diff" = "" ] || {
-							[ $first -eq 0 ] || first=0
 							diff=$(echo "$diff" | sed 's/^/  /')
 							printf "diff $c/$f/$g $s/$f/$g\n$diff\n"
 						}
@@ -51,7 +60,6 @@ for i in $(find $custom -type d ! -name .git ! -empty -mindepth 1 -maxdepth 1 -p
 		elif [ -f $s/$f ]; then
 			diff=$(diff $c/$f $s/$f)
 			[ "$diff" = "" ] || {
-				[ $first -eq 0 ] || first=0
 				diff=$(echo "$diff" | sed 's/^/  /')
 				printf "diff $c/$f $s/$f\n$diff\n"
 			}
