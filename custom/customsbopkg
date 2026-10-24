@@ -12,6 +12,7 @@ cleanup(){
 trap cleanup EXIT
 tmp=/tmp/customsbo.$$
 
+first=1
 for i in $(find $custom -type d ! -name .git ! -empty -mindepth 1 -maxdepth 1 -printf "%f\n"); do
 	p=$(find /var/lib/sbopkg/SBo-git -type d -name $i)
 	[ "$p" = "" ] && continue
@@ -21,7 +22,15 @@ for i in $(find $custom -type d ! -name .git ! -empty -mindepth 1 -maxdepth 1 -p
 			if [ -d $p/$f ]; then
 				for g in $(find $custom/$i/$f -type f -mindepth 1 -maxdepth 1 -printf "%f\n"); do
 					if [ -f $p/$f/$g ]; then
-						diff $custom/$i/$f/$g $p/$f/$g || echo "$p/$f/$g already exists and different from $custom/$i/$f/$g"
+						diff=$(diff $custom/$i/$f/$g $p/$f/$g)
+						[ "$diff" = "" ] || {
+							if [ $first -eq 1 ]; then
+								first=0
+							else
+								printf "\n\n"
+							fi
+							printf "diff $custom/$i/$f/$g $p/$f/$g\n$diff\n"
+						}
 					else
 						cp -a $custom/$i/$f/$g $p/$f
 						echo "$p/$f/$g copied"
@@ -33,7 +42,15 @@ for i in $(find $custom -type d ! -name .git ! -empty -mindepth 1 -maxdepth 1 -p
 			fi
 			continue
 		elif [ -f $p/$f ]; then
-			diff $custom/$i/$f $p/$f || echo "$p/$f already exists and different from $custom/$i/$f"
+			diff=$(diff $custom/$i/$f $p/$f)
+			[ "$diff" = "" ] || {
+				if [ $first -eq 1 ]; then
+					first=0
+				else
+					printf "\n\n"
+				fi
+				printf "diff $custom/$i/$f $p/$f\n$diff\n"
+			}
 		else
 			cp -a $custom/$i/$f $p
 			echo "$p/$f copied"
