@@ -14,49 +14,53 @@ tmp=/tmp/customsbo.$$
 
 first=1
 for i in $(find $custom -type d ! -name .git ! -empty -mindepth 1 -maxdepth 1 -printf "%f\n"); do
-	p=$(find /var/lib/sbopkg/SBo-git -type d -name $i)
-	[ "$p" = "" ] && continue
+	c=$custom/$i
+	s=$(find /var/lib/sbopkg/SBo-git -type d -name $i)
+	[ "$s" = "" ] && continue
+	if [ -f $c/$i.SlackBuild.sbopkg ]; then
+		cver=$(sed '/^VERSION=/!d; s/.*:-\|}.*//g' $c/$i.SlackBuild.sbopkg)
+		sver=$(sed '/^VERSION=/!d; s/.*:-\|}.*//g' $s/$i.SlackBuild)
+		printf "%s\n" $sver $cver | sort -VC || {
+			[ $first -eq 0 ] || first=0
+			echo "$i: skipped (sbopkg version is newer)"
+			continue
+		}
+	fi
 	patch=
-	for f in $(find $custom/$i ! -name README.md -mindepth 1 -maxdepth 1 -printf "%f\n"); do
-		if [ -d $custom/$i/$f ]; then
-			if [ -d $p/$f ]; then
-				for g in $(find $custom/$i/$f -type f -mindepth 1 -maxdepth 1 -printf "%f\n"); do
-					if [ -f $p/$f/$g ]; then
-						diff=$(diff $custom/$i/$f/$g $p/$f/$g)
+	for f in $(find $c ! -name README.md -mindepth 1 -maxdepth 1 -printf "%f\n"); do
+		if [ -d $c/$f ]; then
+			if [ -d $s/$f ]; then
+				for g in $(find $c/$f -type f -mindepth 1 -maxdepth 1 -printf "%f\n"); do
+					if [ -f $s/$f/$g ]; then
+						diff=$(diff $c/$f/$g $s/$f/$g)
 						[ "$diff" = "" ] || {
-							if [ $first -eq 1 ]; then
-								first=0
-							else
-								printf "\n\n"
-							fi
-							printf "diff $custom/$i/$f/$g $p/$f/$g\n$diff\n"
+							[ $first -eq 0 ] || first=0
+							diff=$(echo "$diff" | sed 's/^/  /')
+							printf "diff $c/$f/$g $s/$f/$g\n$diff\n"
 						}
 					else
-						cp -a $custom/$i/$f/$g $p/$f
-						echo "$p/$f/$g copied"
+						cp -a $c/$f/$g $s/$f
+						echo "$s/$f/$g copied"
 					fi
 				done
 			else
-				cp -a $custom/$i/$f $p
-				echo "$p/$f copied"
+				cp -a $c/$f $s
+				echo "$s/$f copied"
 			fi
 			continue
-		elif [ -f $p/$f ]; then
-			diff=$(diff $custom/$i/$f $p/$f)
+		elif [ -f $s/$f ]; then
+			diff=$(diff $c/$f $s/$f)
 			[ "$diff" = "" ] || {
-				if [ $first -eq 1 ]; then
-					first=0
-				else
-					printf "\n\n"
-				fi
-				printf "diff $custom/$i/$f $p/$f\n$diff\n"
+				[ $first -eq 0 ] || first=0
+				diff=$(echo "$diff" | sed 's/^/  /')
+				printf "diff $c/$f $s/$f\n$diff\n"
 			}
 		else
-			cp -a $custom/$i/$f $p
-			echo "$p/$f copied"
+			cp -a $c/$f $s
+			echo "$s/$f copied"
 		fi
 		echo $f | grep -q "\.patch$" || continue
-		grep -q $f $p/$i.SlackBuild && continue
+		grep -q $f $s/$i.SlackBuild && continue
 		pat="patch -p0 < \$CWD/$f"
 		if [ "$patch" = "" ]; then
 			patch="$pat"
@@ -64,7 +68,7 @@ for i in $(find $custom -type d ! -name .git ! -empty -mindepth 1 -maxdepth 1 -p
 			patch="$patch\n$pat"
 		fi
 	done
-	[ -f $p/$i.SlackBuild.sbopkg -o "$patch" = "" ] && continue
-	sed "/^cd \$PRGNAM-\$VERSION/a \\$patch" $p/$i.SlackBuild > $p/$i.SlackBuild.sbopkg
-	echo "$p/$i.SlackBuild.sbopkg created with patches"
+	[ -f $s/$i.SlackBuild.sbopkg -o "$patch" = "" ] && continue
+	sed "/^cd \$PRGNAM-\$VERSION/a \\$patch" $s/$i.SlackBuild > $s/$i.SlackBuild.sbopkg
+	echo "$s/$i.SlackBuild.sbopkg created with patches"
 done
