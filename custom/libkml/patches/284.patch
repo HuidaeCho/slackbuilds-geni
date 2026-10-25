@@ -1,0 +1,54 @@
+From a07d0a4981bbb612cafcbced1204fc2815173ab9 Mon Sep 17 00:00:00 2001
+From: Joel Kiptoo <deusjoel150@gmail.com>
+Date: Thu, 1 Oct 2026 09:57:32 +0300
+Subject: [PATCH] Fix C++20 builds: declare intrusive_ptr hooks next to the
+ smart pointers
+
+boost::intrusive_ptr finds intrusive_ptr_add_ref() and
+intrusive_ptr_release() by argument-dependent lookup. For a type that is
+only forward-declared, its base class kmlbase::Referent is unknown, so the
+kmlbase functions are not found. That happens when C++20 instantiates a
+constexpr intrusive_ptr constructor or destructor for such a type, and
+GCC 15 and Clang report 'use of undeclared identifier
+intrusive_ptr_add_ref'. Declare the kmlbase functions in kml_ptr.h so
+they are visible wherever the kmldom pointer types are.
+---
+ src/kml/dom/kml_ptr.h | 23 +++++++++++++++++++++++
+ 1 file changed, 23 insertions(+)
+
+diff --git a/src/kml/dom/kml_ptr.h b/src/kml/dom/kml_ptr.h
+index 05a1bc3c..d9b7f47a 100644
+--- a/src/kml/dom/kml_ptr.h
++++ b/src/kml/dom/kml_ptr.h
+@@ -28,8 +28,31 @@
+ 
+ #include "boost/intrusive_ptr.hpp"
+ 
++namespace kmlbase {
++class Referent;
++void intrusive_ptr_add_ref(Referent* r);
++void intrusive_ptr_release(Referent* r);
++}  // end namespace kmlbase
++
+ namespace kmldom {
+ 
++// boost::intrusive_ptr finds intrusive_ptr_add_ref() and intrusive_ptr_release()
++// by argument-dependent lookup. For a type that is only forward-declared, the
++// base class kmlbase::Referent is unknown, so the kmlbase functions are not
++// found; this happens when a constexpr constructor or destructor is
++// instantiated in an inline member function (C++20). These templates are
++// found through namespace kmldom instead and only need the complete type when
++// they are instantiated.
++template <class T>
++inline void intrusive_ptr_add_ref(T* p) {
++  kmlbase::intrusive_ptr_add_ref(p);
++}
++
++template <class T>
++inline void intrusive_ptr_release(T* p) {
++  kmlbase::intrusive_ptr_release(p);
++}
++
+ class Element;
+ class Field;
+ 

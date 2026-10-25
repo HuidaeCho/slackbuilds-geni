@@ -15,7 +15,7 @@ tmp=/tmp/customsbo.$$
 for i in $(find $custom -type d ! -name .git ! -empty -mindepth 1 -maxdepth 1 -printf "%f\n"); do
 	c=$custom/$i
 	s=$(find /var/lib/sbopkg/SBo-git -type d -name $i)
-	[ "$s" = "" ] && continue
+	[ -f $c/DISUSED -o "$s" = "" ] && continue
 	if [ -f $c/$i.SlackBuild.sbopkg ]; then
 		cver=$(sed '/^VERSION=/!d; s/.*:-\|}.*//g' $c/$i.SlackBuild.sbopkg)
 		sver=$(sed '/^VERSION=/!d; s/.*:-\|}.*//g' $s/$i.SlackBuild)
