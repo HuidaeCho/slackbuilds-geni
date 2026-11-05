@@ -1,0 +1,195 @@
+#!/bin/sh
+# Slackware build script
+# (C) 2010 GPL by Huidae Cho <https://idea.isnew.info/>
+
+#+GENI
+#PRGNAM=
+VERSION=
+#SRCNAM=
+#SRC=
+#-GENI
+
+CWD=$(pwd)
+PRGNAM=${PRGNAM:-$(basename $0 | sed 's/\.SlackBuild$//')}
+SRCNAM=${SRCNAM:-$PRGNAM-$VERSION}
+SRC=${SRC:-$SRCNAM}
+BUILD=${BUILD:-1}
+TAG=${TAG:-_geni}
+TMP=${TMP:-/tmp/geni}
+PKG=$TMP/package-$PRGNAM
+OUTPUT=${OUTPUT:-/tmp}
+
+if [ -z "$ARCH" ]; then
+  case "$(uname -m)" in
+    i?86) ARCH=i486;;
+    arm*) ARCH=arm;;
+    *) ARCH=$(uname -m);;
+  esac
+fi
+
+if [ "$ARCH" = "i486" ]; then
+  SLKCFLAGS="-O2 -march=i486 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "i686" ]; then
+  SLKCFLAGS="-O2 -march=i686 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "x86_64" ]; then
+  SLKCFLAGS="-O2 -fPIC"
+  LIBDIRSUFFIX="64"
+else
+  SLKCFLAGS="-O2"
+  LIBDIRSUFFIX=""
+fi
+
+rm -rf $PKG
+mkdir -p $TMP $PKG $OUTPUT
+cd $TMP
+rm -rf $PRGNAM-$VERSION
+#+GENI
+if [ -f $CWD/$SRCNAM.tar.gz ]; then
+  tar -xzvf $CWD/$SRCNAM.tar.gz
+elif [ -f $CWD/$SRCNAM.tgz ]; then
+  tar -xzvf $CWD/$SRCNAM.tgz
+elif [ -f $CWD/$SRCNAM.tar.bz2 ]; then
+  tar -xjvf $CWD/$SRCNAM.tar.bz2
+elif [ -f $CWD/$SRCNAM.tbz2 ]; then
+  tar -xjvf $CWD/$SRCNAM.tbz2
+elif [ -f $CWD/$SRCNAM.tar.Z ]; then
+  tar -xZvf $CWD/$SRCNAM.tar.Z
+elif [ -f $CWD/$SRCNAM.zip ]; then
+  unzip $CWD/$SRCNAM.zip
+else
+  echo "No source file found!"
+  exit 1
+fi
+#-GENI
+[ $SRC != $PRGNAM-$VERSION ] && mv $SRC $PRGNAM-$VERSION
+cd $PRGNAM-$VERSION
+chown -R root:root .
+chmod -R u+w,go+r-w,a-s .
+
+#+GENI
+if [ -f configure ]; then
+  ./configure --help | grep -- --docdir &> /dev/null
+  if [ $? -eq 0 ]; then
+    DOCDIR=--docdir=/usr/doc/$PRGNAM-$VERSION
+  else
+    ./configure --help | grep -- --with-docdir &> /dev/null
+    if [ $? -eq 0 ]; then
+      DOCDIR=--with-docdir=/usr/doc/$PRGNAM-$VERSION
+    fi
+  fi
+  set -e
+  CFLAGS="$SLKCFLAGS" \
+  CXXFLAGS="$SLKCFLAGS" \
+  ./configure \
+    --prefix=/usr/local \
+    --libdir=/usr/local/lib${LIBDIRSUFFIX} \
+    --mandir=/usr/local/man \
+    --infodir=/usr/local/info \
+    $DOCDIR
+  make
+else
+  set -e
+  make CFLAGS="$SLKCFLAGS" CXXFLAGS="$SLKCFLAGS"
+fi
+make install DESTDIR=$PKG
+#-GENI
+
+( cd $PKG
+found=1
+while [ $found -eq 1 ]; do
+  found=0
+  for i in `find . -type d -empty`; do
+    found=1
+    rmdir $i
+  done
+done
+
+for i in `find . -type l`; do
+  ( cd `dirname $i`
+    j=`basename $i`
+    k=`ls -go $j`
+    if echo $k | grep -- "-> $PKG"; then
+      rm $j
+      ln -s `echo $k | awk '{print $NF}' | sed "s#^$PKG##"` $j
+    fi
+  )
+done
+
+find . | xargs file | grep -e "executable" -e "shared object" | grep ELF \
+  | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
+
+if [ -d usr/local/man ]; then
+  ( cd usr/local/man
+    find . -type f -exec gzip -9 {} \;
+    for i in $(find . -type l); do
+      ln -s $(readlink $i).gz $i.gz
+      rm $i
+    done
+  )
+fi
+
+if [ -d usr/local/info ]; then
+  rm -f usr/local/info/dir
+  gzip -9 usr/local/info/*.info*
+fi
+
+find . -name perllocal.pod \
+  -o -name ".packlist" \
+  -o -name "*.bs" \
+  | xargs rm -f
+)
+
+[ ! -d $PKG/usr/doc/$PRGNAM-$VERSION ] && mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
+cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
+if [ "$DOCDIR" = "" ]; then
+  for i in ABOUT ABOUT-NLS ANNOUNCE AUTHORS *BUGS* CHANGES CONFIGURATION *COPYING* *COPYRIGHT* CREDITS ChangeLog Changelog CHANGELOG CONTRIBUTORS *FAQ* FEATURES FILES HACKING History HISTORY INSTALL* LICENSE LSM MANIFEST NEWS *README* *Readme* SITES *RELEASE* RELNOTES THANKS TIPS TODO VERSION CONFIGURATION* GPL License  Doc doc Docs* docs* Roadmap ROADMAP; do
+    if [ -e $i -a ! -d $i ]; then
+      if [ ! -L $i ]; then
+        cp -a $i $PKG/usr/doc/$PRGNAM-$VERSION
+      else
+        cp -LpR $i $PKG/usr/doc/$PRGNAM-$VERSION
+      fi
+    fi
+  done
+fi
+
+mkdir -p $PKG/install
+if [ -f $CWD/slack-desc ]; then
+  cat $CWD/slack-desc > $PKG/install/slack-desc
+else
+  indent=`echo $PRGNAM | sed 's/./ /g'`
+  cat<<EOT> $PKG/install/slack-desc
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.  Line
+# up the first '|' above the ':' following the base package name, and the '|' on
+# the right side marks the last column you can put a character in. You must make
+# exactly 11 lines for the formatting to be correct.  It's also customary to
+# leave one space after the ':'.
+
+$indent|-----handy-ruler------------------------------------------------------|
+$PRGNAM: $PRGNAM
+$PRGNAM:
+$PRGNAM:
+$PRGNAM:
+$PRGNAM:
+$PRGNAM:
+$PRGNAM:
+$PRGNAM:
+$PRGNAM:
+$PRGNAM:
+$PRGNAM:
+EOT
+fi
+if [ -f $CWD/doinst.sh.gz ]; then
+  zcat $CWD/doinst.sh.gz > $PKG/install/doinst.sh
+  for new in `grep '^config .*\.new' $PKG/install/doinst.sh |
+    sed 's/^config  *//'`; do
+    old=`echo $new | sed 's/\.new$//'`
+    mv $PKG/$old $PKG/$new
+  done
+fi
+
+cd $PKG
+/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.tgz
