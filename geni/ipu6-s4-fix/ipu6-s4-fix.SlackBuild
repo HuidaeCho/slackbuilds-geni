@@ -69,6 +69,9 @@ install -Dm644 drivers/spi/spi-ljca.ko $BASE/spi-ljca.ko
 # Install the elogind S4 hook as a package-managed executable.
 install -Dm755 $CWD/ipu6 $PKG/etc/elogind/system-sleep/ipu6
 
+mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
+cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
+
 mkdir -p $PKG/install
 cat $CWD/slack-desc > $PKG/install/slack-desc
 # Bind the dependency-index hooks to the kernel version built for this package.
