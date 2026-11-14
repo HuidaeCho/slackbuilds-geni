@@ -3,11 +3,20 @@
 # Only reload the IPU6 drivers; leave LJCA, INT3472, and OV2740 alone.
 # https://gist.github.com/StarGate01/5ec1bf35f8453844a06385ada3aa60c0?permalink_comment_id=6465419#gistcomment-6465419
 
+. $0.conf
+
 case "$1/$2" in
 pre/hibernate)
-	/sbin/modprobe -r intel_ipu6_isys
+	daemon --pidfiles=~$USER/.run --name=wireplumber --stop
+	while pgrep -u $USER wireplumber >&/dev/null; do
+		sleep 0.1
+	done
+	modprobe -r intel_ipu6_isys
 	;;
 post/hibernate)
-	/sbin/modprobe intel_ipu6_isys
+	modprobe intel_ipu6_isys
+	daemon --user=$USER --env="XDG_RUNTIME_DIR=/run/user/$(id -u $USER)" \
+		-rB --pidfiles=~$USER/.run --name=wireplumber \
+		/usr/bin/wireplumber
 	;;
 esac
