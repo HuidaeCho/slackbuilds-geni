@@ -2,6 +2,7 @@
 # SlackBuild for the IPU6 camera S4 hibernation fix.
 # Build patched LJCA kernel modules separately from Slackware's stock modules.
 # Requires matching kernel sources and ljca-s4-fix.patch alongside this script.
+# https://gist.github.com/StarGate01/5ec1bf35f8453844a06385ada3aa60c0
 
 set -eu
 
