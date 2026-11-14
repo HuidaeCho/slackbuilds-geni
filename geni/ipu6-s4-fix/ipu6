@@ -1,0 +1,12 @@
+#!/bin/sh
+# Work around IPU6 resume issues on S4 hibernation.
+# Only reload the IPU6 drivers; leave LJCA, INT3472, and OV2740 alone.
+
+case "$1/$2" in
+    pre/hibernate)
+        /sbin/modprobe -r intel_ipu6_isys intel_ipu6
+        ;;
+    post/hibernate)
+        /sbin/modprobe intel_ipu6_isys
+        ;;
+esac

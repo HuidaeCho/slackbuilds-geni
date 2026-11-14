@@ -1,0 +1,19 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description. Line
+# up the first '|' above the ':' following the base package name, and the '|'
+# on the right side marks the last column you can put a character in. You must
+# make exactly 11 lines for the formatting to be correct. It's also
+# customary to leave one space after the ':'.
+
+         |-----handy-ruler------------------------------------------------------|
+ipu6-fix: ipu6-fix (IPU6 camera S4 hibernation fix)
+ipu6-fix:
+ipu6-fix: Four patched LJCA kernel modules for restoring the camera bridge
+ipu6-fix: after S4 hibernation on affected Intel IPU6 laptops.
+ipu6-fix: Also installs an elogind hook to reload IPU6 drivers on resume.
+ipu6-fix:
+ipu6-fix: Installs under updates/ljca-s4-fix, preserving stock kernel modules.
+ipu6-fix:
+ipu6-fix:
+ipu6-fix:
+ipu6-fix:
