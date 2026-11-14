@@ -5,7 +5,7 @@
 
 set -eu
 
-PRGNAM=ipu6-fix
+PRGNAM=ipu6-s4-fix
 KVER=${KVER:-$(uname -r)}
 VERSION=${VERSION:-$(printf '%s' $KVER | tr '-' '_')}
 ARCH=${ARCH:-$(uname -m)}
