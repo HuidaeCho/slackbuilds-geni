@@ -1,0 +1,19 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description. Line
+# up the first '|' above the ':' following the base package name, and the '|'
+# on the right side marks the last column you can put a character in. You must
+# make exactly 11 lines for the formatting to be correct. It's also
+# customary to leave one space after the ':'.
+
+                  |-----handy-ruler------------------------------------------------------|
+pipewire-libcamera: pipewire-libcamera (libcamera SPA plugin for PipeWire)
+pipewire-libcamera:
+pipewire-libcamera: This package installs only PipeWire's libcamera SPA plugin,
+pipewire-libcamera: allowing a compatible PipeWire/WirePlumber installation to
+pipewire-libcamera: discover cameras managed by libcamera.
+pipewire-libcamera:
+pipewire-libcamera: Built from source matching the installed PipeWire version.
+pipewire-libcamera: The standard Slackware PipeWire package is not replaced.
+pipewire-libcamera:
+pipewire-libcamera:
+pipewire-libcamera:
