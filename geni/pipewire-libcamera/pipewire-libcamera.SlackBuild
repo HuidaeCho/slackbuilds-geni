@@ -3,20 +3,14 @@
 # Uses the matching PipeWire source and the installed libcamera library.
 # Does not replace Slackware's PipeWire package or build another libcamera.
 
-#+GENI
-#PRGNAM=
 PIPEWIRE_VERSION=$(pkg-config --modversion libpipewire-0.3)
 LIBCAMERA_VERSION=$(pkg-config --modversion libcamera)
 VERSION=${PIPEWIRE_VERSION}_${LIBCAMERA_VERSION}
 SRCNAM=pipewire
 SRC=$SRCNAM-$PIPEWIRE_VERSION
-#BUILD=
-#-GENI
 
 CWD=$(cd $(dirname $0) && pwd)
 PRGNAM=${PRGNAM:-$(basename $0 | sed 's/\.SlackBuild$//')}
-SRCNAM=${SRCNAM:-$PRGNAM-$VERSION}
-SRC=${SRC:-$SRCNAM}
 BUILD=${BUILD:-1}
 TAG=${TAG:-_geni}
 TMP=${TMP:-/tmp/geni}
@@ -49,9 +43,7 @@ rm -rf $PKG
 mkdir -p $TMP $PKG $OUTPUT
 cd $TMP
 rm -rf $PRGNAM-$VERSION
-#+GENI
 tar xvf $CWD/$SRCNAM-$PIPEWIRE_VERSION.tar.?z
-#-GENI
 [ $SRC != $PRGNAM-$VERSION ] && mv $SRC $PRGNAM-$VERSION
 cd $PRGNAM-$VERSION
 chown -R root:root .
@@ -62,29 +54,29 @@ chmod -R u+w,go+r-w,a-s .
 export CFLAGS="$SLKCFLAGS"
 export CXXFLAGS="$SLKCFLAGS"
 meson setup build \
-    --prefix=/usr \
-    --libdir=lib$LIBDIRSUFFIX \
-    --buildtype=release \
-    --wrap-mode=nofallback \
-    -Dauto_features=disabled \
-    -Dlibcamera=enabled \
-    -Dsession-managers=[] \
-    -Dexamples=disabled \
-    -Dtests=disabled \
-    -Ddocs=disabled \
-    -Dman=disabled \
-    -Dflatpak=disabled
+  --prefix=/usr \
+  --libdir=lib$LIBDIRSUFFIX \
+  --buildtype=release \
+  --wrap-mode=nofallback \
+  -Dauto_features=disabled \
+  -Dlibcamera=enabled \
+  -Dsession-managers=[] \
+  -Dexamples=disabled \
+  -Dtests=disabled \
+  -Ddocs=disabled \
+  -Dman=disabled \
+  -Dflatpak=disabled
 
 sed -i \
-    -e 's/properties::CameraLocationFront/properties::LocationFront/g' \
-    -e 's/properties::CameraLocationBack/properties::LocationBack/g' \
-    -e 's/properties::CameraLocationExternal/properties::LocationExternal/g' \
-    spa/plugins/libcamera/libcamera-device.cpp
+ -e 's/properties::CameraLocationFront/properties::LocationFront/g' \
+ -e 's/properties::CameraLocationBack/properties::LocationBack/g' \
+ -e 's/properties::CameraLocationExternal/properties::LocationExternal/g' \
+ spa/plugins/libcamera/libcamera-device.cpp
 
 meson compile -C build spa-libcamera
 
 install -Dm755 build/spa/plugins/libcamera/libspa-libcamera.so \
-    $PKG/usr/lib$LIBDIRSUFFIX/spa-0.2/libcamera/libspa-libcamera.so
+  $PKG/usr/lib$LIBDIRSUFFIX/spa-0.2/libcamera/libspa-libcamera.so
 
 mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
 cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
@@ -93,4 +85,4 @@ mkdir -p $PKG/install
 cat $CWD/slack-desc > $PKG/install/slack-desc
 
 cd $PKG
-/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.tgz
+/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.txz

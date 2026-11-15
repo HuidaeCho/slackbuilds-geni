@@ -30,7 +30,7 @@ BUILD=${BUILD:-1}
 # https://cgit.ponce.cc/slackbuilds/commit/?id=ab151412335ba0a12a22822769b70d98870158ce
 # Removed from SlackBuilds
 TAG=${TAG:-_geni}
-PKGTYPE=${PKGTYPE:-tgz}
+PKGTYPE=${PKGTYPE:-txz}
 
 if [ -z "$ARCH" ]; then
   case "$( uname -m )" in

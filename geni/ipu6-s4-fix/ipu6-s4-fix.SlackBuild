@@ -4,45 +4,52 @@
 # Requires matching kernel sources and ljca-s4-fix.patch alongside this script.
 # https://gist.github.com/StarGate01/5ec1bf35f8453844a06385ada3aa60c0
 
-set -eu
-
-PRGNAM=ipu6-s4-fix
 KVER=${KVER:-$(uname -r)}
-VERSION=${VERSION:-$(printf '%s' $KVER | tr '-' '_')}
-ARCH=${ARCH:-$(uname -m)}
-BUILD=${BUILD:-1}
-TAG=${TAG:-_geni}
+VERSION=$KVER
+SRC=/usr/src/linux-$KVER
+KBUILD=/lib/modules/$KVER/build
+JOBS=4
 
 CWD=$(cd $(dirname $0) && pwd)
+PRGNAM=${PRGNAM:-$(basename $0 | sed 's/\.SlackBuild$//')}
+BUILD=${BUILD:-1}
+TAG=${TAG:-_geni}
 TMP=${TMP:-/tmp/geni}
-OUTPUT=${OUTPUT:-/tmp}
-WORK=$TMP/$PRGNAM-$KVER
 PKG=$TMP/package-$PRGNAM-$KVER
-SRC=${SRC:-/usr/src/linux-$KVER}
-KBUILD=${KBUILD:-/lib/modules/$KVER/build}
-JOBS=${JOBS:-4}
+OUTPUT=${OUTPUT:-/tmp}
 
-if [ ! -f $KBUILD/Makefile ]; then
-    echo "Missing kernel build tree: $KBUILD" >&2
-    exit 1
+if [ -z "$ARCH" ]; then
+  case "$(uname -m)" in
+    i?86) ARCH=i486;;
+    arm*) ARCH=arm;;
+    *) ARCH=$(uname -m);;
+  esac
 fi
 
-rm -rf $WORK $PKG
-mkdir -p $WORK $PKG $OUTPUT
-cd $WORK
+if [ ! -f $KBUILD/Makefile ]; then
+  echo "Missing kernel build tree: $KBUILD" >&2
+  exit 1
+fi
+
+rm -rf $PKG
+mkdir -p $TMP $PKG $OUTPUT
+cd $TMP
+rm -rf $PRGNAM-$VERSION
+mkdir $PRGNAM-$VERSION
+cd $PRGNAM-$VERSION
 
 for file in \
-    drivers/usb/misc/usb-ljca.c \
-    drivers/i2c/busses/i2c-ljca.c \
-    drivers/gpio/gpio-ljca.c \
-    drivers/spi/spi-ljca.c
+  drivers/usb/misc/usb-ljca.c \
+  drivers/i2c/busses/i2c-ljca.c \
+  drivers/gpio/gpio-ljca.c \
+  drivers/spi/spi-ljca.c
 do
-    if [ ! -f $SRC/$file ]; then
-        echo "Missing kernel source: $SRC/$file" >&2
-        exit 1
-    fi
-    mkdir -p $(dirname $file)
-    cp $SRC/$file $file
+  if [ ! -f $SRC/$file ]; then
+    echo "Missing kernel source: $SRC/$file" >&2
+    exit 1
+  fi
+  mkdir -p $(dirname $file)
+  cp $SRC/$file $file
 done
 
 patch -p1 < $CWD/ljca-s4-fix.patch
@@ -53,12 +60,12 @@ printf 'obj-m := gpio-ljca.o\n' > drivers/gpio/Kbuild
 printf 'obj-m := spi-ljca.o\n' > drivers/spi/Kbuild
 
 for dir in \
-    drivers/usb/misc \
-    drivers/i2c/busses \
-    drivers/gpio \
-    drivers/spi
+  drivers/usb/misc \
+  drivers/i2c/busses \
+  drivers/gpio \
+  drivers/spi
 do
-    make -C $KBUILD M=$WORK/$dir -j$JOBS modules
+  make -C $KBUILD M=$TMP/$PRGNAM-$VERSION/$dir -j$JOBS modules
 done
 
 BASE=$PKG/lib/modules/$KVER/updates/ljca-s4-fix
@@ -81,4 +88,4 @@ sed "s|@KVER@|$KVER|g" $CWD/doinst.sh > $PKG/install/doinst.sh
 sed "s|@KVER@|$KVER|g" $CWD/douninst.sh > $PKG/install/douninst.sh
 
 cd $PKG
-/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.tgz
+/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.txz
