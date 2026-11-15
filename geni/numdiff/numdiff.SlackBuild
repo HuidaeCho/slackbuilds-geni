@@ -7,6 +7,7 @@ PRGNAM=numdiff
 VERSION=5.9.0
 #SRCNAM=
 #SRC=
+#ARCH=
 #-GENI
 
 CWD=$(pwd)

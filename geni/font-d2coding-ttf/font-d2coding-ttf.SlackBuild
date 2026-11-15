@@ -5,9 +5,9 @@
 #+GENI
 #PRGNAM=
 VERSION=1.3.2
-ARCH=noarch
 SRCNAM=D2Coding-Ver1.3.2-20180524
 #SRC=
+ARCH=noarch
 #-GENI
 
 CWD=$(pwd)

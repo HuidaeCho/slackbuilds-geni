@@ -5,9 +5,9 @@
 #+GENI
 #PRGNAM=
 VERSION=2.5
-ARCH=noarch
 SRCNAM=NanumGothicCoding-2.5
 #SRC=
+ARCH=noarch
 #-GENI
 
 CWD=$(pwd)
